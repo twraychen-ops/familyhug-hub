@@ -5,9 +5,6 @@
 <meta name="robots" content="noindex, nofollow">
 
 <title>英文環境搭建手冊｜Ray</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -33,7 +30,7 @@
     line-height: 1.8;
   }
 
-  /* 2. 密碼鎖畫面樣式 (VIP 尊榮高質感設計) */
+  /* 密碼鎖畫面樣式 (VIP 尊榮高質感深藍設計) */
   #gatekeeper-container {
     background: var(--navy);
     min-height: 100vh;
@@ -125,7 +122,7 @@
     display: none;
   }
 
-  /* 3. 完整內容主體（預設隱藏，解密成功才顯示） */
+  /* 完整內容主體（預設隱藏，解密成功才顯示） */
   #protected-content {
     display: none;
   }
@@ -866,7 +863,7 @@
           <ul class="phase-items">
             <li>老鼠記者系列（Geronimo Stilton）</li>
             <li>Junie B. Jones 系列</li>
-            <li>神奇樹屋系列（Magic House）</li>
+            <li>神奇樹屋系列（Magic Tree House）</li>
             <li>哈利波特系列（Harry Potter）</li>
             <li>以上皆搭配故事CD，讓孩子同時聽和讀</li>
             <li>大量使用YouTube免費英文資源</li>
@@ -941,7 +938,7 @@
         <div class="principle-card">
           <div class="principle-number">06</div>
           <div class="principle-title">口音不是問題</div>
-          <p class="principle-desc">媽媽的聲音是孩子最有安全感的聲音。你願意唸，比你唸得多標準更重要。放心唸。</p>
+          <p class="principle-desc">媽媽的聲音是值孩子最有安全感的聲音。你願意唸，比你唸得多標準更重要。放心唸。</p>
         </div>
       </div>
     </div>
@@ -1029,7 +1026,7 @@
       </div>
 
       <div class="faq-item">
-        <div class="faq-q">Q：我的子已經三歲了，現在開始會不會太晚？</div>
+        <div class="faq-q">Q：我的孩子已經三歲了，現在開始會不會太晚？</div>
         <div class="faq-a">不晚。語言環境什麼時候開始都不算晚，重要的是開始之後持續下去。三歲的孩子語言吸收力仍然非常強，現在開始，三年後你會慶幸自己當初沒有再等。</div>
       </div>
 
@@ -1045,7 +1042,7 @@
 
       <div class="faq-item">
         <div class="faq-q">Q：需要補習班嗎？</div>
-        <div class="faq-a">我的孩子成長過程中只上過兩次補習班——一次是小時候參加兩個月的暑期美語戲劇課，另一次是考托福前參加了三個月的托福班，為的是熟悉考試模式，不是補英文程度。托福109分、高中從二年級開始英文免修、到美國留學快速融入，這一切都是在家庭環境裡長出來的。補習班可以補充特定需求，但不能替代環境。環境才是根。</div>
+        <div class="faq-a">我的孩子成長過程中只上過兩次補習班——一次是小時候假如兩個月的暑期美語戲劇課，另一次是考托福前參加了三個月的托福班，為的是熟悉考試模式，不是補英文程度。托福109分、高中從二年級開始英文免修、到美國留學快速融入，這一切都是在家庭環境裡長出來的。補習班可以補充特定需求，但不能替代環境。環境才是根。</div>
       </div>
     </div>
   </div>
@@ -1090,7 +1087,7 @@
   </div>
 
   <div class="handbook-footer">
-    <div class="footer-brand">親子陪伴時光</div>
+    <div class="footer-brand">Ray</div>
     <p class="footer-note">
       本手冊為 Ray 陪伴地圖資料，提供給每一個購買迪士尼美語的家庭參考使用。<br>
       內容來自真實二十年養育經驗，非學術研究，僅供參考。<br>
@@ -1100,29 +1097,26 @@
 </div>
 
 <script>
-  // 這是 8888 透過網頁原生加密後安全的 base64 編碼，防止按右鍵看原始碼
-  const gateToken = "ODg4OA=="; 
-
   function verifyAndUnlock() {
     const userInput = document.getElementById("passkey").value;
     
-    // 使用瀏覽器原生自帶的方法進行安全比對
-    if (btoa(userInput) === gateToken) {
-      // 密碼正確：隱藏鎖定畫面，顯示完整手冊
+    // 密碼判斷：如果是 8888 則成功解鎖
+    if (userInput === "8888") {
+      // 隱藏密碼鎖畫面
       document.getElementById("gatekeeper-container").style.display = "none";
+      // 顯示手冊精彩內容
       document.getElementById("protected-content").style.display = "block";
-      
-      // 自動將頁面滾動回最頂端
+      // 移動回頁面最上方
       window.scrollTo(0, 0);
     } else {
-      // 密碼錯誤：顯示紅字提示，並清空輸入框
+      // 顯示錯誤訊息
       document.getElementById("error-message").style.display = "block";
       document.getElementById("passkey").value = "";
       document.getElementById("passkey").focus();
     }
   }
 
-  // 支援按下 Enter 鍵直接送出驗證
+  // 支援手機與電腦按下 Enter 鍵直接解鎖
   function handleKeyPress(event) {
     if (event.key === "Enter") {
       verifyAndUnlock();

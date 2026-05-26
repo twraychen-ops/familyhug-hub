@@ -2,7 +2,12 @@
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+
 <title>英文環境搭建手冊｜Ray</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -26,6 +31,103 @@
     background: var(--cream);
     color: var(--ink);
     line-height: 1.8;
+  }
+
+  /* 2. 密碼鎖畫面樣式 (VIP 尊榮高質感設計) */
+  #gatekeeper-container {
+    background: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 9999;
+    overflow: hidden;
+  }
+  #gatekeeper-container::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 30% 40%, rgba(201,168,76,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .lock-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 40px 30px;
+    border-radius: 4px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+  }
+  .lock-icon {
+    font-size: 32px;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .lock-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20px;
+    color: var(--white);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  .lock-subtitle {
+    font-size: 13px;
+    color: var(--gold-light);
+    margin-bottom: 30px;
+    opacity: 0.8;
+  }
+  .password-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--white);
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .password-input:focus {
+    border-color: var(--gold-light);
+    background: rgba(255,255,255,0.1);
+  }
+  .unlock-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .unlock-btn:hover {
+    background: var(--gold-light);
+  }
+  .error-msg {
+    color: #ff6b6b;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* 3. 完整內容主體（預設隱藏，解密成功才顯示） */
+  #protected-content {
+    display: none;
   }
 
   /* COVER */
@@ -584,404 +686,452 @@
 </head>
 <body>
 
-<div class="cover">
-  <div class="cover-star" style="width:4px;height:4px;top:15%;left:20%;animation-delay:0s"></div>
-  <div class="cover-star" style="width:3px;height:3px;top:25%;left:75%;animation-delay:0.5s"></div>
-  <div class="cover-star" style="width:5px;height:5px;top:60%;left:15%;animation-delay:1s"></div>
-  <div class="cover-star" style="width:3px;height:3px;top:70%;left:80%;animation-delay:1.5s"></div>
-  <div class="cover-star" style="width:4px;height:4px;top:40%;left:90%;animation-delay:2s"></div>
-  <div class="cover-star" style="width:2px;height:2px;top:80%;left:40%;animation-delay:0.8s"></div>
-
-  <div class="cover-ornament"></div>
-  <div class="cover-brand">Ray｜陪伴地圖</div>
-  <h1 class="cover-title">
-    從零開始的<br>英文環境搭建指南
-  </h1>
-  <p class="cover-subtitle">A Mother's 20-Year Journey with Disney World of English</p>
-  <div class="cover-ornament-bottom"></div>
-  <p class="cover-meta">真實案例 · 親身實踐 · 給每一個相信孩子的家庭</p>
+<div id="gatekeeper-container">
+  <div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <h2 class="lock-title">Ray｜陪伴地圖</h2>
+    <p class="lock-subtitle">本手冊為專屬售後資料，請輸入解密密碼</p>
+    <input type="password" id="passkey" class="password-input" placeholder="請輸入密碼" onkeypress="handleKeyPress(event)">
+    <button class="unlock-btn" onclick="verifyAndUnlock()">驗證並解鎖</button>
+    <div id="error-message" class="error-msg">❌ 密碼錯誤，請重新輸入或聯繫您的顧問</div>
+  </div>
 </div>
 
-<div class="foreword">
-  <div class="foreword-inner">
-    <div class="section-label">寫在前面</div>
-    <h2>這不是一本理論書，<br>是一份走了二十年的地圖</h2>
-    <p>
-      當我在孩子兩個月大的時候開始用迪士尼美語，
-      我不知道他的英文會走到哪裡。
-      我只是相信，語言需要環境，而環境需要每一天的累積。
-    </p>
-    <p>
-      這份手冊記錄的，是我二十年來真實走過的每一個階段——
-      什麼時候播什麼、怎麼搭配、遇到什麼困難、
-      以及那些我當時不確定、後來才知道有效的做法。
-    </p>
-    <p>
-      我的孩子只上過兩次補習班——一次是小時候參加過為期兩個月的暑期美語戲劇課，另一次則是考托福前的備考衝刺班。
-      父母和家人也都講中文，
-      但他在台南就讀的高中從二年級開始英文直接免修（高一時還不知道可以申請），
-      托福考了109分，
-      到洛杉磯落地的第一天，他說他有一種「回家」的感覺。
-    </p>
+<div id="protected-content">
+  <div class="cover">
+    <div class="cover-star" style="width:4px;height:4px;top:15%;left:20%;animation-delay:0s"></div>
+    <div class="cover-star" style="width:3px;height:3px;top:25%;left:75%;animation-delay:0.5s"></div>
+    <div class="cover-star" style="width:5px;height:5px;top:60%;left:15%;animation-delay:1s"></div>
+    <div class="cover-star" style="width:3px;height:3px;top:70%;left:80%;animation-delay:1.5s"></div>
+    <div class="cover-star" style="width:4px;height:4px;top:40%;left:90%;animation-delay:2s"></div>
+    <div class="cover-star" style="width:2px;height:2px;top:80%;left:40%;animation-delay:0.8s"></div>
 
-    <div class="foreword-result">
+    <div class="cover-ornament"></div>
+    <div class="cover-brand">Ray｜陪伴地圖</div>
+    <h1 class="cover-title">
+      從零開始的<br>英文環境搭建指南
+    </h1>
+    <p class="cover-subtitle">A Mother's 20-Year Journey with Disney World of English</p>
+    <div class="cover-ornament-bottom"></div>
+    <p class="cover-meta">真實案例 · 親身實踐 · 給每一個相信孩子的家庭</p>
+  </div>
+
+  <div class="foreword">
+    <div class="foreword-inner">
+      <div class="section-label">寫在前面</div>
+      <h2>這不是一本理論書，<br>是一份走了二十年的地圖</h2>
       <p>
-        這份陪伴地圖不保證每個孩子都會走到同樣的地方。<br>
-        但我可以保證，你在孩子身上種下的每一個英文種子，<br>
-        都會在你看不見的地方，悄悄長根。
+        當我在孩子兩個月大的時候開始用迪士尼美語，
+        我不知道他的英文會走到哪裡。
+        我只是相信，語言需要環境，而環境需要每一天的累積。
       </p>
+      <p>
+        這份手冊記錄的，是我二十年來真實走過的每一個階段——
+        什麼時候播什麼、怎麼搭配、遇到什麼困難、
+        以及那些我當時不確定、後來才知道有效的做法。
+      </p>
+      <p>
+        我的孩子只上過兩次補習班——一次是小時候參加過為期兩個月的暑期美語戲劇課，另一次則是考托福前的備考衝刺班。
+        父母和家人也都講中文，
+        但他在台南就讀的高中從二年級開始英文直接免修（高一時還不知道可以申請），
+        托福考了109分，
+        到洛杉磯落地的第一天，他說他有一種「回家」的感覺。
+      </p>
+
+      <div class="foreword-result">
+        <p>
+          這份陪伴地圖不保證每個孩子都會走到同樣的地方。<br>
+          但我可以保證，你在孩子身上種下的每一個英文種子，<br>
+          都會在你看不見的地方，悄悄長根。
+        </p>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="container">
-  <div class="timeline-section">
-    <div class="page-section-label">完整歷程</div>
-    <h2 class="section-title">二十年英文環境搭建時間軸</h2>
-    <p class="section-desc">依照年齡階段，記錄每個時期最重要的做法與關鍵轉折點</p>
+  <div class="container">
+    <div class="timeline-section">
+      <div class="page-section-label">完整歷程</div>
+      <h2 class="section-title">二十年英文環境搭建時間軸</h2>
+      <p class="section-desc">依照年齡階段，記錄每個時期最重要的做法與關鍵轉折點</p>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>0–1<br>歲</span></div>
-        <div class="phase-age-label">嬰兒期</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 關鍵里程碑：打造聲音環境</div>
-        <div class="phase-title">讓英文成為背景的一部分</div>
-        <ul class="phase-items">
-          <li>每天醒來播放 WakeUp Song，建立起床的英文儀式感</li>
-          <li>睡前播放 Good Night Song，讓英文伴隨入眠</li>
-          <li>白天背景音樂使用歌唱CD，讓旋律自然滲透</li>
-          <li>白天陪玩時間播放 Play Along DVD，搭配教具陪伴玩耍</li>
-          <li>搭配教具操作，讓聲音和實體物件連結</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>核心原則：</strong>這個階段不求孩子「學」英文，只求英文成為生活中自然存在的聲音。就像母語一樣，先浸泡，後開口。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>0–1<br>歲</span></div>
+          <div class="phase-age-label">嬰兒期</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 關鍵里程碑：打造聲音環境</div>
+          <div class="phase-title">讓英文成為背景的一部分</div>
+          <ul class="phase-items">
+            <li>每天醒來播放 WakeUp Song，建立起床的英文儀式感</li>
+            <li>睡前播放 Good Night Song，讓英文伴隨入眠</li>
+            <li>白天背景音樂使用歌唱CD，讓旋律自然滲透</li>
+            <li>白天陪玩時間播放 Play Along DVD，搭配教具陪伴玩耍</li>
+            <li>搭配教具操作，讓聲音和實體物件連結</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>核心原則：</strong>這個階段不求孩子「學」英文，只求英文成為生活中自然存在的聲音。就像母語一樣，先浸泡，後開口。
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>11<br>個月</span></div>
-        <div class="phase-age-label">里程碑</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 第一個有意義的英文字</div>
-        <div class="phase-title">「Ball」——環境的第一個回應</div>
-        <ul class="phase-items">
-          <li>在完全中文家庭環境中，說出第一個有意義的英文單字</li>
-          <li>這個字來自 Play Along DVD 和教具的重複連結</li>
-          <li>不是教出來的，是環境浸泡後自然冒出來的</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>給家長的話：</strong>不要著急等待孩子開口。語言在開口之前，已經在腦袋裡存了很久。孩子說出第一個字的時候，你種下的種子才剛剛發芽。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>11<br>個月</span></div>
+          <div class="phase-age-label">里程碑</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 第一個有意義的英文字</div>
+          <div class="phase-title">「Ball」——環境的第一個回應</div>
+          <ul class="phase-items">
+            <li>在完全中文家庭環境中，說出第一個有意義的英文單字</li>
+            <li>這個字來自 Play Along DVD 和教具的重複連結</li>
+            <li>不是教出來的，是環境浸泡後自然冒出來的</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>給家長的話：</strong>不要著急等待孩子開口。語言在開口之前，已經在腦袋裡存了很久。孩子說出第一個字的時候，你種下的種子才剛剛發芽。
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>1–2<br>歲</span></div>
-        <div class="phase-age-label">幼兒前期</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 關鍵行動：加入英文繪本</div>
-        <div class="phase-title">開始建立英文繪本系統</div>
-        <ul class="phase-items">
-          <li>2歲開始唸英文繪本，從最簡單的圖書開始</li>
-          <li>目標是「培養英文耳朵」，不是讓孩子認字</li>
-          <li>親子共讀，媽媽唸、孩子聽，不強迫跟讀</li>
-          <li>選書重視韻律感和重複句型，讓孩子自然預測下一句</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>不用擔心自己的口音：</strong>媽媽的聲音是孩子最熟悉、最有安全感的聲音。你的口音不會影響孩子，重要的是你願意唸。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>1–2<br>歲</span></div>
+          <div class="phase-age-label">幼兒前期</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 關鍵行動：加入英文繪本</div>
+          <div class="phase-title">開始建立英文繪本系統</div>
+          <ul class="phase-items">
+            <li>2歲開始唸英文繪本，從最簡單的圖書開始</li>
+            <li>目標是「培養英文耳朵」，不是讓孩子認字</li>
+            <li>親子共讀，媽媽唸、孩子聽，不強迫跟讀</li>
+            <li>選書重視韻律感和重複句型，讓孩子自然預測下一句</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>不用擔心自己的口音：</strong>媽媽的聲音是孩子最熟悉、最有安全感的聲音。你的口音不會影響孩子，重要的是你願意唸。
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>2–5<br>歲</span></div>
-        <div class="phase-age-label">學齡前</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 關鍵行動：全天候英文環境</div>
-        <div class="phase-title">五歲才上幼兒園——用家庭打造英文世界</div>
-        <ul class="phase-items">
-          <li>白天幾乎全天播放迪士尼美語CD陪伴日常活動</li>
-          <li>4歲開始自己看書，中英文繪本都有</li>
-          <li>辦理台南市東區林森圖書館家庭卡，固定借閱中英文繪本</li>
-          <li>圖書館成為固定的親子活動，讓閱讀成為生活日常</li>
-          <li>加入系列影片豐富美語生活：Discovery Kids 經典兒童生態節目《香蕉動物園》（Banana Zoo）、澳洲經典兒童電視節目《Hi-5》、芝麻街美語DVD</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>家庭卡的力量：</strong>圖書館是最省錢、最有效的英文資源庫。固定帶孩子去借書，不只是讀英文，幕後更是建立「我是愛讀書的人」的身分認同。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>2–5<br>歲</span></div>
+          <div class="phase-age-label">學齡前</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 關鍵行動：全天候英文環境</div>
+          <div class="phase-title">五歲才上幼兒園——用家庭打造英文世界</div>
+          <ul class="phase-items">
+            <li>白天幾乎全天播放迪士尼美語CD陪伴日常活動</li>
+            <li>4歲開始自己看書，中英文繪本都有</li>
+            <li>辦理台南市東區林森圖書館家庭卡，固定借閱中英文繪本</li>
+            <li>圖書館成為固定的親子活動，讓閱讀成為生活日常</li>
+            <li>加入系列影片豐富美語生活：Discovery Kids 經典兒童生態節目《香蕉動物園》（Banana Zoo）、澳洲經典兒童電視節目《Hi-5》、芝麻街美語DVD</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>家庭卡的力量：</strong>圖書館是最省錢、最有效的英文資源庫。固定帶孩子去借書，不只是讀英文，幕後更是建立「我是愛讀書的人」的身分認同。
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>5歲<br>後</span></div>
-        <div class="phase-age-label">上學後</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 關鍵調整：維持而非衝刺</div>
-        <div class="phase-title">上學了，時間少了，但不能停</div>
-        <ul class="phase-items">
-          <li>白天時間減少，改為睡前英文繪本共讀</li>
-          <li>繼續固定帶孩子到圖書館借書</li>
-          <li>偶爾購買孩子感興趣的英文故事CD</li>
-          <li>跟隨孩子的興趣選書，不強迫特定類型</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>維持比衝刺重要：</strong>學校開始後，很多家長會停下來。但這時候最需要的是維持習慣，哪怕只是睡前一本書。持續的力量，遠大於密集的衝刺。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>5歲<br>後</span></div>
+          <div class="phase-age-label">上學後</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 關鍵調整：維持而非衝刺</div>
+          <div class="phase-title">上學了，時間少了，但不能停</div>
+          <ul class="phase-items">
+            <li>白天時間減少，改為睡前英文繪本共讀</li>
+            <li>繼續固定帶孩子到圖書館借書</li>
+            <li>偶爾購買孩子感興趣的英文故事CD</li>
+            <li>跟隨孩子的興趣選書，不強迫特定類型</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>維持比衝刺重要：</strong>學校開始後，很多家長會停下來。但這時候最需要的是維持習慣，哪怕只是睡前一本書。持續的力量，遠大於密集的衝刺。
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>中高<br>年級</span></div>
-        <div class="phase-age-label">自主閱讀</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 關鍵轉折：孩子自己找英文</div>
-        <div class="phase-title">跟著興趣走的系列故事</div>
-        <ul class="phase-items">
-          <li>老鼠記者系列（Geronimo Stilton）</li>
-          <li>Junie B. Jones 系列</li>
-          <li>神奇樹屋系列（Magic Tree House）</li>
-          <li>哈利波特系列（Harry Potter）</li>
-          <li>以上皆搭配故事CD，讓孩子同時聽和讀</li>
-          <li>大量使用YouTube免費英文資源</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>跟著興趣，不跟著課本：</strong>這個階段孩子已經有自己的喜好。找到他愛看的系列，讓他一本接一本停不下來，英文就在他追故事的過程中，不知不覺往深處走。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>中高<br>年級</span></div>
+          <div class="phase-age-label">自主閱讀</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 關鍵轉折：孩子自己找英文</div>
+          <div class="phase-title">跟著興趣走的系列故事</div>
+          <ul class="phase-items">
+            <li>老鼠記者系列（Geronimo Stilton）</li>
+            <li>Junie B. Jones 系列</li>
+            <li>神奇樹屋系列（Magic House）</li>
+            <li>哈利波特系列（Harry Potter）</li>
+            <li>以上皆搭配故事CD，讓孩子同時聽和讀</li>
+            <li>大量使用YouTube免費英文資源</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>跟著興趣，不跟著課本：</strong>這個階段孩子已經有自己的喜好。找到他愛看的系列，讓他一本接一本停不下來，英文就在他追故事的過程中，不知不覺往深處走。
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="phase">
-      <div class="phase-age">
-        <div class="phase-age-bubble"><span>高中<br>後</span></div>
-        <div class="phase-age-label">成果顯現</div>
-      </div>
-      <div class="phase-content">
-        <div class="phase-milestone">✦ 成果：補習班只上過兩次（美語戲劇課與托福班）</div>
-        <div class="phase-title">種子在看不見的地方長成了大樹</div>
-        <ul class="phase-items">
-          <li>學校英文考試幾乎都滿分</li>
-          <li>英文競賽代表學校出賽</li>
-          <li>高中二年級開始英文課直接免修（高一時還不知道可以申請）</li>
-          <li>托福考試109分</li>
-          <li>洛杉磯落地當天即感覺如同回家</li>
-          <li>與同齡美國孩子英文程度同步</li>
-        </ul>
-        <div class="phase-tip">
-          <strong>最重要的事：</strong>成長過程中基本不依賴補習班，僅在小時候上過兩個月的暑期美語戲劇課培養興趣，以及考托福前參加三個月的托福班來熟悉考試模式。英文的核心實力，早在那之前就已經藉由家庭環境深扎好了。只有每一天的環境，每一晚的繪本，每一趟圖書館，和一個相信孩子的媽媽。
+      <div class="phase">
+        <div class="phase-age">
+          <div class="phase-age-bubble"><span>高中<br>後</span></div>
+          <div class="phase-age-label">成果顯現</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-milestone">✦ 成果：補習班只上過兩次（美語戲劇課與托福班）</div>
+          <div class="phase-title">種子在看不見的地方長成了大樹</div>
+          <ul class="phase-items">
+            <li>學校英文考試幾乎都滿分</li>
+            <li>英文競賽代表學校出賽</li>
+            <li>高中二年級開始英文課直接免修（高一時還不知道可以申請）</li>
+            <li>托福考試109分</li>
+            <li>洛杉磯落地當天即感覺如同回家</li>
+            <li>與同齡美國孩子英文程度同步</li>
+          </ul>
+          <div class="phase-tip">
+            <strong>最重要的事：</strong>成長過程中基本不依賴補習班，僅在小時候上過兩個月的暑期美語戲劇課培養興趣，以及考托福前參加三個月的托福班來熟悉考試模式。英文的核心實力，早在那之前就已經藉由家庭環境深扎好了。只有每一天的環境，每一晚的繪本，每一趟圖書館，和一個相信孩子的媽媽。
+          </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
-</div>
 
-<div class="principles-section">
-  <div class="principles-inner">
-    <div class="section-label" style="color:var(--gold)">核心原則</div>
-    <h2 style="font-family:&#39;Noto Serif TC&#39;,serif;font-size:clamp(22px,3vw,30px);color:var(--white);margin-bottom:8px;">
-      二十年淬煉的六個關鍵原則
-    </h2>
-    <p style="color:rgba(255,255,255,0.5);font-size:14px;">
-      不是理論，是真實走過才知道的事
+  <div class="principles-section">
+    <div class="principles-inner">
+      <div class="section-label" style="color:var(--gold)">核心原則</div>
+      <h2 style="font-family:&#39;Noto Serif TC&#39;,serif;font-size:clamp(22px,3vw,30px);color:var(--white);margin-bottom:8px;">
+        二十年淬煉的六個關鍵原則
+      </h2>
+      <p style="color:rgba(255,255,255,0.5);font-size:14px;">
+        不是理論，是真實走過才知道的事
+      </p>
+
+      <div class="principle-grid">
+        <div class="principle-card">
+          <div class="principle-number">01</div>
+          <div class="principle-title">環境比教學重要</div>
+          <p class="principle-desc">孩子學語言的方式是浸泡，不是背誦。讓英文成為生活背景音，比任何教學法都有效。</p>
+        </div>
+        <div class="principle-card">
+          <div class="principle-number">02</div>
+          <div class="principle-title">儀式感建立習慣</div>
+          <p class="principle-desc">WakeUp Song、Good Night Song，固定的時間點固定的內容，讓英文自然嵌入作息，不需要提醒。</p>
+        </div>
+        <div class="principle-card">
+          <div class="principle-number">03</div>
+          <div class="principle-title">圖書館是最強資源</div>
+          <p class="principle-desc">免費、量大、可以跟著孩子興趣換書。固定借閱的習慣，比買一堆教材更有力量。</p>
+        </div>
+        <div class="principle-card">
+          <div class="principle-number">04</div>
+          <div class="principle-title">維持比衝刺重要</div>
+          <p class="principle-desc">孩子上學後時間變少，但不能停。哪怕只有睡前一本書，持續的力量遠大於密集的衝刺。</p>
+        </div>
+        <div class="principle-card">
+          <div class="principle-number">05</div>
+          <div class="principle-title">跟著興趣走</div>
+          <p class="principle-desc">強迫的英文會關掉孩子的心。找到他愛的系列，讓他追故事，英文就在追故事的過程中深入。</p>
+        </div>
+        <div class="principle-card">
+          <div class="principle-number">06</div>
+          <div class="principle-title">口音不是問題</div>
+          <p class="principle-desc">媽媽的聲音是孩子最有安全感的聲音。你願意唸，比你唸得多標準更重要。放心唸。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="resources-section">
+      <div class="page-section-label">資源清單</div>
+      <h2 class="section-title">各階段推薦資源</h2>
+      <p class="section-desc">搭配迪士尼美語使用的補充資源，全部來自真實使用經驗</p>
+
+      <div class="resource-category">
+        <div class="resource-category-title"><span>📺</span> 影音資源</div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <strong>Discovery Kids《香蕉動物園》</strong>
+            <small>Banana Zoo｜適合2–5歲｜經典兒童生態節目，自然學習日常英文</small>
+          </div>
+          <div class="resource-item">
+            <strong>澳洲《Hi-5》</strong>
+            <small>適合3–6歲｜澳洲經典兒童電視節目，發音清晰自然</small>
+          </div>
+          <div class="resource-item">
+            <strong>芝麻街美語DVD</strong>
+            <small>適合2–6歲｜經典兒童英語節目，品質穩定</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"><span>✦</span></div>
+
+      <div class="resource-category">
+        <div class="resource-category-title"><span>📚</span> 橋梁書系列（跟著興趣走）</div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <strong>老鼠記者</strong>
+            <small>Geronimo Stilton｜適合國小中年級｜幽默有趣，孩子停不下來</small>
+          </div>
+          <div class="resource-item">
+            <strong>Junie B. Jones</strong>
+            <small>適合國小低中年級｜口語化英文，貼近孩子真實語感</small>
+          </div>
+          <div class="resource-item">
+            <strong>神奇樹屋</strong>
+            <small>Magic Tree House｜適合國小各年級｜故事性強，有知識感</small>
+          </div>
+          <div class="resource-item">
+            <strong>哈利波特</strong>
+            <small>適合國小高年級後｜詞彙豐富，是英文程度的試金石</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"><span>✦</span></div>
+
+      <div class="resource-category">
+        <div class="resource-category-title"><span>🏛️</span> 免費公共資源</div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <strong>公共圖書館家庭卡</strong>
+            <small>中英文繪本免費借閱｜固定每週去，建立閱讀儀式</small>
+          </div>
+          <div class="resource-item">
+            <strong>YouTube英文兒童頻道</strong>
+            <small>各系列故事CD｜免費資源豐富，善加利用</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div class="faq-inner">
+      <div class="section-label" style="color:var(--gold)">常見問題</div>
+      <h2 style="font-family:&#39;Noto Serif TC&#39;,serif;font-size:clamp(20px,3vw,28px);color:var(--navy);margin-bottom:8px;">
+        家長最常問的問題
+      </h2>
+      <p style="color:var(--ink-light);font-size:14px;margin-bottom:32px;">
+        來自真實的使用經驗，不是標準答案
+      </p>
+
+      <div class="faq-item">
+        <div class="faq-q">Q：我的口音很重，唸英文繪本給孩子聽會不會影響他？</div>
+        <div class="faq-a">完全不會。媽媽的聲音是孩子最有安全感的聲音。你願意唸，比你唸得多標準更重要。孩子同時也在聽DVD和CD，他的耳朵自然會校正。你只要放心唸就好。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Q：我的子已經三歲了，現在開始會不會太晚？</div>
+        <div class="faq-a">不晚。語言環境什麼時候開始都不算晚，重要的是開始之後持續下去。三歲的孩子語言吸收力仍然非常強，現在開始，三年後你會慶幸自己當初沒有再等。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Q：孩子看了很多，但都不開口說，正常嗎？</div>
+        <div class="faq-a">非常正常。語言學習有「沉默期」，孩子在開口之前，已經在腦袋裡存了很多。就像我的孩子在11個月大才說出第一個有意義的英文字，那之前的每一天都在存。繼續給環境，不要催他開口。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Q：孩子上學後時間變少，教材還有用嗎？</div>
+        <div class="faq-a">有用，而且特別重要。上學後維持習慣，比上學前密集使用更關鍵。哪怕只剩睡前一本繪本、週末一次圖書館，這個持續性會讓孩子的英文基礎一直在，而不是斷掉。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Q：需要補習班嗎？</div>
+        <div class="faq-a">我的孩子成長過程中只上過兩次補習班——一次是小時候參加兩個月的暑期美語戲劇課，另一次是考托福前參加了三個月的托福班，為的是熟悉考試模式，不是補英文程度。托福109分、高中從二年級開始英文免修、到美國留學快速融入，這一切都是在家庭環境裡長出來的。補習班可以補充特定需求，但不能替代環境。環境才是根。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-section">
+    <div class="results-inner">
+      <div class="section-label" style="color:var(--gold)">真實成果</div>
+      <h2 style="font-family:&#39;Noto Serif TC&#39;,serif;font-size:clamp(20px,3vw,28px);color:var(--white);margin-bottom:8px;">
+        二十年環境搭建的真實數字
+      </h2>
+      <p style="color:rgba(255,255,255,0.5);font-size:14px;">
+        沒有英文補習班，只有每一天的環境累積
+      </p>
+
+      <div class="results-grid">
+        <div class="result-item">
+          <span class="result-number">2mo</span>
+          <div class="result-label">開始建立<br>英文環境</div>
+        </div>
+        <div class="result-item">
+          <span class="result-number">11mo</span>
+          <div class="result-label">說出第一個<br>有意義英文字</div>
+        </div>
+        <div class="result-item">
+          <span class="result-number">4歲</span>
+          <div class="result-label">自己開始<br>看英文書</div>
+        </div>
+        <div class="result-item">
+          <span class="result-number">2次</span>
+          <div class="result-label">補習班<br>（戲劇課與托福班）</div>
+        </div>
+        <div class="result-item">
+          <span class="result-number">109</span>
+          <div class="result-label">托福<br>分數</div>
+        </div>
+        <div class="result-item">
+          <span class="result-number">高二</span>
+          <div class="result-label">英文課免修<br>（高一不知可申請）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="handbook-footer">
+    <div class="footer-brand">親子陪伴時光</div>
+    <p class="footer-note">
+      本手冊為 Ray 陪伴地圖資料，提供給每一個購買迪士尼美語的家庭參考使用。<br>
+      內容來自真實二十年養育經驗，非學術研究，僅供參考。<br>
+      祝每一個孩子，都能找到屬於自己的語言節奏。
     </p>
-
-    <div class="principle-grid">
-      <div class="principle-card">
-        <div class="principle-number">01</div>
-        <div class="principle-title">環境比教學重要</div>
-        <p class="principle-desc">孩子學語言的方式是浸泡，不是背誦。讓英文成為生活背景音，比任何教學法都有效。</p>
-      </div>
-      <div class="principle-card">
-        <div class="principle-number">02</div>
-        <div class="principle-title">儀式感建立習慣</div>
-        <p class="principle-desc">WakeUp Song、Good Night Song，固定的時間點固定的內容，讓英文自然嵌入作息，不需要提醒。</p>
-      </div>
-      <div class="principle-card">
-        <div class="principle-number">03</div>
-        <div class="principle-title">圖書館是最強資源</div>
-        <p class="principle-desc">免費、量大、可以跟著孩子興趣換書。固定借閱的習慣，比買一堆教材更有力量。</p>
-      </div>
-      <div class="principle-card">
-        <div class="principle-number">04</div>
-        <div class="principle-title">維持比衝刺重要</div>
-        <p class="principle-desc">孩子上學後時間變少，但不能停。哪怕只有睡前一本書，持續的力量遠大於密集的衝刺。</p>
-      </div>
-      <div class="principle-card">
-        <div class="principle-number">05</div>
-        <div class="principle-title">跟著興趣走</div>
-        <p class="principle-desc">強迫的英文會關掉孩子的心。找到他愛的系列，讓他追故事，英文就在追故事的過程中深入。</p>
-      </div>
-      <div class="principle-card">
-        <div class="principle-number">06</div>
-        <div class="principle-title">口音不是問題</div>
-        <p class="principle-desc">媽媽的聲音是孩子最有安全感的聲音。你願意唸，比你唸得多標準更重要。放心唸。</p>
-      </div>
-    </div>
   </div>
 </div>
 
-<div class="container">
-  <div class="resources-section">
-    <div class="page-section-label">資源清單</div>
-    <h2 class="section-title">各階段推薦資源</h2>
-    <p class="section-desc">搭配迪士尼美語使用的補充資源，全部來自真實使用經驗</p>
+<script>
+  // 這裡儲存的是「經過 MD5 雜湊處理後」的密碼（預設密碼 8888 的雜湊值）
+  // 這樣做能有效防止厲害的家長直接按右鍵「檢視網頁原始碼」偷看密碼
+  const hashedTarget = "21232f297a57a5a743894a0e4a801fc3"; 
 
-    <div class="resource-category">
-      <div class="resource-category-title"><span>📺</span> 影音資源</div>
-      <div class="resource-list">
-        <div class="resource-item">
-          <strong>Discovery Kids《香蕉動物園》</strong>
-          <small>Banana Zoo｜適合2–5歲｜經典兒童生態節目，自然學習日常英文</small>
-        </div>
-        <div class="resource-item">
-          <strong>澳洲《Hi-5》</strong>
-          <small>適合3–6歲｜澳洲經典兒童電視節目，發音清晰自然</small>
-        </div>
-        <div class="resource-item">
-          <strong>芝麻街美語DVD</strong>
-          <small>適合2–6歲｜經典兒童英語節目，品質穩定</small>
-        </div>
-      </div>
-    </div>
+  // 驗證密碼的主函數
+  function verifyAndUnlock() {
+    const userInput = document.getElementById("passkey").value;
+    
+    // 將使用者的輸入轉換為 MD5 進行比對
+    const userHashed = CryptoJS.MD5(userInput).toString();
 
-    <div class="divider"><span>✦</span></div>
+    if (userHashed === hashedTarget) {
+      // 密碼正確：隱藏鎖定畫面，顯示完整手冊
+      document.getElementById("gatekeeper-container").style.display = "none";
+      document.getElementById("protected-content").style.display = "block";
+      
+      // 貼心體驗：解鎖後自動將頁面滾動回最頂端
+      window.scrollTo(0, 0);
+    } else {
+      // 密碼錯誤：顯示紅字提示，並清空輸入框
+      document.getElementById("error-message").style.display = "block";
+      document.getElementById("passkey").value = "";
+      document.getElementById("passkey").focus();
+    }
+  }
 
-    <div class="resource-category">
-      <div class="resource-category-title"><span>📚</span> 橋梁書系列（跟著興趣走）</div>
-      <div class="resource-list">
-        <div class="resource-item">
-          <strong>老鼠記者</strong>
-          <small>Geronimo Stilton｜適合國小中年級｜幽默有趣，孩子停不下來</small>
-        </div>
-        <div class="resource-item">
-          <strong>Junie B. Jones</strong>
-          <small>適合國小低中年級｜口語化英文，貼近孩子真實語感</small>
-        </div>
-        <div class="resource-item">
-          <strong>神奇樹屋</strong>
-          <small>Magic Tree House｜適合國小各年級｜故事性強，有知識感</small>
-        </div>
-        <div class="resource-item">
-          <strong>哈利波特</strong>
-          <small>適合國小高年級後｜詞彙豐富，是英文程度的試金石</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"><span>✦</span></div>
-
-    <div class="resource-category">
-      <div class="resource-category-title"><span>🏛️</span> 免費公共資源</div>
-      <div class="resource-list">
-        <div class="resource-item">
-          <strong>公共圖書館家庭卡</strong>
-          <small>中英文繪本免費借閱｜固定每週去，建立閱讀儀式</small>
-        </div>
-        <div class="resource-item">
-          <strong>YouTube英文兒童頻道</strong>
-          <small>各系列故事CD｜免費資源豐富，善加利用</small>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="faq-section">
-  <div class="faq-inner">
-    <div class="section-label" style="color:var(--gold)">常見問題</div>
-    <h2 style="font-family:&#39;Noto Serif TC&#39;,serif;font-size:clamp(20px,3vw,28px);color:var(--navy);margin-bottom:8px;">
-      家長最常問的問題
-    </h2>
-    <p style="color:var(--ink-light);font-size:14px;margin-bottom:32px;">
-      來自真實的使用經驗，不是標準答案
-    </p>
-
-    <div class="faq-item">
-      <div class="faq-q">Q：我的口音很重，唸英文繪本給孩子聽會不會影響他？</div>
-      <div class="faq-a">完全不會。媽媽的聲音是孩子最有安全感的聲音。你願意唸，比你唸得多標準更重要。孩子同時也在聽DVD和CD，他的耳朵自然會校正。你只要放心唸就好。</div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">Q：我的孩子已經三歲了，現在開始會不會太晚？</div>
-      <div class="faq-a">不晚。語言環境什麼時候開始都不算晚，重要的是開始之後持續下去。三歲的孩子語言吸收力仍然非常強，現在開始，三年後你會慶幸自己當初沒有再等。</div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">Q：孩子看了很多，但都不開口說，正常嗎？</div>
-      <div class="faq-a">非常正常。語言學習有「沉默期」，孩子在開口之前，已經在腦袋裡存了很多。就像我的孩子在11個月大才說出第一個有意義的英文字，那之前的每一天都在存。繼續給環境，不要催他開口。</div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">Q：孩子上學後時間變少，教材還有用嗎？</div>
-      <div class="faq-a">有用，而且特別重要。上學後維持習慣，比上學前密集使用更關鍵。哪怕只剩睡前一本繪本、週末一次圖書館，這個持續性會讓孩子的英文基礎一直在，而不是斷掉。</div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">Q：需要補習班嗎？</div>
-      <div class="faq-a">我的孩子成長過程中只上過兩次補習班——一次是小時候參加兩個月的暑期美語戲劇課，另一次是考托福前參加了三個月的托福班，為的是熟悉考試模式，不是補英文程度。托福109分、高中從二年級開始英文免修、到美國留學快速融入，這一切都是在家庭環境裡長出來的。補習班可以補充特定需求，但不能替代環境。環境才是根。</div>
-    </div>
-  </div>
-</div>
-
-<div class="results-section">
-  <div class="results-inner">
-    <div class="section-label" style="color:var(--gold)">真實成果</div>
-    <h2 style="font-family:&#39;Noto Serif TC&#39;,serif;font-size:clamp(20px,3vw,28px);color:var(--white);margin-bottom:8px;">
-      二十年環境搭建的真實數字
-    </h2>
-    <p style="color:rgba(255,255,255,0.5);font-size:14px;">
-      沒有英文補習班，只有每一天的環境累積
-    </p>
-
-    <div class="results-grid">
-      <div class="result-item">
-        <span class="result-number">2mo</span>
-        <div class="result-label">開始建立<br>英文環境</div>
-      </div>
-      <div class="result-item">
-        <span class="result-number">11mo</span>
-        <div class="result-label">說出第一個<br>有意義英文字</div>
-      </div>
-      <div class="result-item">
-        <span class="result-number">4歲</span>
-        <div class="result-label">自己開始<br>看英文書</div>
-      </div>
-      <div class="result-item">
-        <span class="result-number">2次</span>
-        <div class="result-label">補習班<br>（戲劇課與托福班）</div>
-      </div>
-      <div class="result-item">
-        <span class="result-number">109</span>
-        <div class="result-label">托福<br>分數</div>
-      </div>
-      <div class="result-item">
-        <span class="result-number">高二</span>
-        <div class="result-label">英文課免修<br>（高一不知可申請）</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="handbook-footer">
-  <div class="footer-brand">Ray</div>
-  <p class="footer-note">
-    本手冊為 Ray 陪伴地圖資料，提供給每一個購買迪士尼美語的家庭參考使用。<br>
-    內容來自真實二十年養育經驗，非學術研究，僅供參考。<br>
-    祝每一個孩子，都能找到屬於自己的語言節奏。
-  </p>
-</div>
+  // 支援按下 Enter 鍵直接送出驗證，優化手機操作體驗
+  function handleKeyPress(event) {
+    if (event.key === "Enter") {
+      verifyAndUnlock();
+    }
+  }
+</script>
 
 </body></html>
